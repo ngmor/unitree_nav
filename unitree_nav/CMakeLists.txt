@@ -7,9 +7,19 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(ros2_unitree_legged_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+set(DEFAULT_DEPENDENCIES rclcpp ros2_unitree_legged_msgs)
+
+add_executable(cmd_processor src/cmd_processor.cpp)
+ament_target_dependencies(cmd_processor ${DEFAULT_DEPENDENCIES})
+
+install(TARGETS
+  cmd_processor
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
