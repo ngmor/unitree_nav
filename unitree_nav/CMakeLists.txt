@@ -11,7 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(ros2_unitree_legged_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-set(DEFAULT_DEPENDENCIES rclcpp ros2_unitree_legged_msgs)
+set(DEFAULT_DEPENDENCIES rclcpp ros2_unitree_legged_msgs geometry_msgs)
 
 add_executable(cmd_processor src/cmd_processor.cpp)
 ament_target_dependencies(cmd_processor ${DEFAULT_DEPENDENCIES})
