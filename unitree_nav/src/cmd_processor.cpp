@@ -2,6 +2,7 @@
 #include "std_srvs/srv/empty.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "ros2_unitree_legged_msgs/msg/high_cmd.hpp"
+#include "unitree_nav_interfaces/srv/set_body_rpy.hpp"
 
 using namespace std::chrono_literals;
 
@@ -87,12 +88,22 @@ public:
       std::bind(&CmdProcessor::stand_up_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
-
     srv_lay_down_ = create_service<std_srvs::srv::Empty>(
       "lay_down",
       std::bind(&CmdProcessor::lay_down_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
+    srv_recover_stand_ = create_service<std_srvs::srv::Empty>(
+      "recover_stand",
+      std::bind(&CmdProcessor::recover_stand_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+    srv_set_body_rpy_ = create_service<unitree_nav_interfaces::srv::SetBodyRPY>(
+      "set_body_rpy",
+      std::bind(&CmdProcessor::set_body_rpy_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+
 
     //Misc variables
     cmd_vel_counter_ = cmd_vel_timeout_; // init to timeout value so we don't publish
@@ -117,6 +128,8 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_stand_up_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_lay_down_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_recover_stand_;
+  rclcpp::Service<unitree_nav_interfaces::srv::SetBodyRPY>::SharedPtr srv_set_body_rpy_;
 
   double rate_, interval_;
   std::chrono::milliseconds interval_ms_, cmd_vel_timeout_, cmd_vel_counter_;
@@ -184,6 +197,26 @@ private:
   ) {
     reset_cmd_vel();
     high_cmd_.mode = to_value(Go1Mode::position_stand_down);
+  }
+
+  //put the dog in the recover stand state
+  void recover_stand_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::recovery_stand);
+  }
+
+  void set_body_rpy_callback(
+    const std::shared_ptr<unitree_nav_interfaces::srv::SetBodyRPY::Request> request,
+    std::shared_ptr<unitree_nav_interfaces::srv::SetBodyRPY::Response>
+  ) {
+    high_cmd_.euler[0] = request->roll;
+    high_cmd_.euler[1] = request->pitch;
+    high_cmd_.euler[2] = request->yaw;
+
+    high_cmd_.mode = to_value(Go1Mode::force_stand);
   }
 };
 

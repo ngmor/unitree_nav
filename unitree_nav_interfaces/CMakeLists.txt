@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(unitree_nav)
+project(unitree_nav_interfaces)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,26 +7,13 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(ros2_unitree_legged_msgs REQUIRED)
-find_package(unitree_nav_interfaces REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+ament_export_dependencies(rosidl_default_runtime)
 
-# executables
-add_executable(cmd_processor src/cmd_processor.cpp)
-ament_target_dependencies(cmd_processor
-  rclcpp ros2_unitree_legged_msgs geometry_msgs std_srvs unitree_nav_interfaces
-)
-
-install(TARGETS
-  cmd_processor
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}
+rosidl_generate_interfaces(
+  ${PROJECT_NAME}_srv
+  "srv/SetBodyRPY.srv"
+  LIBRARY_NAME ${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
