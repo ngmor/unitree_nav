@@ -212,6 +212,8 @@ private:
     const std::shared_ptr<unitree_nav_interfaces::srv::SetBodyRPY::Request> request,
     std::shared_ptr<unitree_nav_interfaces::srv::SetBodyRPY::Response>
   ) {
+    reset_cmd_vel();
+
     high_cmd_.euler[0] = request->roll;
     high_cmd_.euler[1] = request->pitch;
     high_cmd_.euler[2] = request->yaw;
