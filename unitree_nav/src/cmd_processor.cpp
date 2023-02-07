@@ -61,7 +61,7 @@ public:
     declare_parameter("rate", 200.0, param);
     rate_ = get_parameter("rate").get_parameter_value().get<double>();
     interval_ = 1.0 / rate_;
-    interval_ms_ = static_cast<std::chrono::milliseconds>(static_cast<int>(interval_ * 1000.0)),
+    interval_ms_ = static_cast<std::chrono::milliseconds>(static_cast<int>(interval_ * 1000.0));
 
     param.description = "The amount of time (ms) for which a received cmd_vel will be published.";
     declare_parameter("cmd_vel_timeout", 250, param);
