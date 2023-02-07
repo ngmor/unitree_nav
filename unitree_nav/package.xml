@@ -11,6 +11,7 @@
 
   <depend>ros2launch</depend>
   <depend>rclcpp</depend>
+  <depend>std_srvs</depend>
   <depend>geometry_msgs</depend>
   <depend>ros2_unitree_legged_msgs</depend>
 

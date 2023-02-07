@@ -8,10 +8,13 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(ros2_unitree_legged_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(ros2_unitree_legged_msgs REQUIRED)
 
-set(DEFAULT_DEPENDENCIES rclcpp ros2_unitree_legged_msgs geometry_msgs)
+
+
+set(DEFAULT_DEPENDENCIES rclcpp ros2_unitree_legged_msgs geometry_msgs std_srvs)
 
 add_executable(cmd_processor src/cmd_processor.cpp)
 ament_target_dependencies(cmd_processor ${DEFAULT_DEPENDENCIES})
@@ -19,6 +22,11 @@ ament_target_dependencies(cmd_processor ${DEFAULT_DEPENDENCIES})
 install(TARGETS
   cmd_processor
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

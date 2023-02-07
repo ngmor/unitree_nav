@@ -1,4 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
+#include "std_srvs/srv/empty.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "ros2_unitree_legged_msgs/msg/high_cmd.hpp"
 
@@ -62,7 +63,7 @@ public:
     interval_ms_ = static_cast<std::chrono::milliseconds>(static_cast<int>(interval_ * 1000.0)),
 
     param.description = "The amount of time (ms) for which a received cmd_vel will be published.";
-    declare_parameter("cmd_vel_timeout", 500, param);
+    declare_parameter("cmd_vel_timeout", 250, param);
     cmd_vel_timeout_ = static_cast<std::chrono::milliseconds>(
       get_parameter("cmd_vel_timeout").get_parameter_value().get<int>()
     );
@@ -78,6 +79,19 @@ public:
       "cmd_vel",
       10,
       std::bind(&CmdProcessor::cmd_vel_callback, this, std::placeholders::_1)
+    );
+
+    //Services
+    srv_stand_up_ = create_service<std_srvs::srv::Empty>(
+      "stand_up",
+      std::bind(&CmdProcessor::stand_up_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+
+    srv_lay_down_ = create_service<std_srvs::srv::Empty>(
+      "lay_down",
+      std::bind(&CmdProcessor::lay_down_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
     );
 
     //Misc variables
@@ -101,7 +115,9 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<ros2_unitree_legged_msgs::msg::HighCmd>::SharedPtr pub_high_cmd_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
-  
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_stand_up_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_lay_down_;
+
   double rate_, interval_;
   std::chrono::milliseconds interval_ms_, cmd_vel_timeout_, cmd_vel_counter_;
   geometry_msgs::msg::Twist cmd_vel_ {};
@@ -118,7 +134,7 @@ private:
 
     } else { //cmd_vel has timed out
       //reset to 0 twist
-      cmd_vel_ = geometry_msgs::msg::Twist {};
+      reset_cmd_vel();
     }
 
     //Build high command
@@ -141,6 +157,33 @@ private:
     //set mode and gait type
     high_cmd_.mode = to_value(Go1Mode::target_velocity_walking);
     high_cmd_.gait_type = to_value(Go1Gait::trot);
+  }
+
+  void reset_cmd_vel() {
+    cmd_vel_.linear.x = 0.0;
+    cmd_vel_.linear.y = 0.0;
+    cmd_vel_.linear.z = 0.0;
+    cmd_vel_.angular.x = 0.0;
+    cmd_vel_.angular.y = 0.0;
+    cmd_vel_.angular.z = 0.0;
+  }
+
+  //put the dog in the stand up state
+  void stand_up_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::position_stand_up);
+  }
+
+  //put the dog in the stand down state
+  void lay_down_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::position_stand_down);
   }
 };
 
