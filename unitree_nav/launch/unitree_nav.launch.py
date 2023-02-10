@@ -42,4 +42,14 @@ def generate_launch_description():
             executable='cmd_processor',
             output='screen'
         ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('rslidar_sdk'),
+                    'launch',
+                    'start.py'
+                ])
+            )
+        )
     ])
