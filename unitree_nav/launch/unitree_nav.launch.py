@@ -2,7 +2,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
@@ -21,6 +21,13 @@ def generate_launch_description():
             name='fixed_frame',
             default_value='base_footprint',
             description='Fixed frame for RVIZ'
+        ),
+
+        DeclareLaunchArgument(
+            name='use_lidar',
+            default_value='true',
+            choices=["true", "false"],
+            description='Launch lidar sdk'
         ),
 
         IncludeLaunchDescription(
@@ -50,6 +57,9 @@ def generate_launch_description():
                     'launch',
                     'start.py'
                 ])
-            )
+            ),
+            condition=LaunchConfigurationEquals(
+                "use_lidar", "true"
+            ),
         )
     ])
