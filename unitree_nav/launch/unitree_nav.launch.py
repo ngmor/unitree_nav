@@ -30,6 +30,13 @@ def generate_launch_description():
             description='Launch lidar sdk'
         ),
 
+        DeclareLaunchArgument(
+            name='use_rtabmap',
+            default_value='true',
+            choices=["true", "false"],
+            description='Launch rtabmap_ros for SLAM'
+        ),
+
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
@@ -61,5 +68,18 @@ def generate_launch_description():
             condition=LaunchConfigurationEquals(
                 "use_lidar", "true"
             ),
-        )
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('rtabmap_ros'),
+                    'launch',
+                    'rslidar_robosense.launch.py'
+                ])
+            ),
+            condition=LaunchConfigurationEquals(
+                "use_rtabmap", "true"
+            ),
+        ),
     ])
