@@ -66,7 +66,7 @@ def generate_launch_description():
                 ])
             ),
             condition=LaunchConfigurationEquals(
-                "use_lidar", "true"
+                "use_lidar", "true",
             ),
         ),
 
@@ -79,7 +79,7 @@ def generate_launch_description():
                 ])
             ),
             condition=LaunchConfigurationEquals(
-                "use_rtabmap", "true"
+                "use_rtabmap", "true",
             ),
         ),
     ])
