@@ -18,7 +18,7 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             name='fixed_frame',
-            default_value='base_footprint',
+            default_value='map',
             description='Fixed frame for RVIZ'
         ),
 
