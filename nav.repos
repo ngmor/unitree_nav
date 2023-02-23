@@ -10,7 +10,7 @@ repositories:
   src/unitree_nav:
     type: git
     url: git@github.com:ngmor/unitree_nav.git
-    version: lidar-integration
+    version: main
   src/unitree_ros2:
     type: git
     url: git@github.com:katie-hughes/unitree_ros2.git
