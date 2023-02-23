@@ -2,6 +2,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
@@ -16,10 +17,18 @@ def generate_launch_description():
             description='Open RVIZ for Go1 visualization'
         ),
 
-        DeclareLaunchArgument(
-            name='fixed_frame',
-            default_value='map',
-            description='Fixed frame for RVIZ'
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            arguments=[
+                '-d',
+                PathJoinSubstitution([
+                    FindPackageShare('unitree_nav'),
+                    'config',
+                    'nav.rviz'
+                ])
+            ],
+            condition=IfCondition(LaunchConfiguration('use_rviz'))
         ),
 
         IncludeLaunchDescription(
@@ -31,8 +40,7 @@ def generate_launch_description():
                 ])
             ),
             launch_arguments=[
-                ('use_rviz', LaunchConfiguration('use_rviz')),
-                ('fixed_frame', LaunchConfiguration('fixed_frame')),
+                ('use_rviz', 'false'),
             ],
         ),
 
