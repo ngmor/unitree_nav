@@ -12,9 +12,16 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             name='use_rviz',
-            default_value='false',
+            default_value='true',
             choices=['true','false'],
             description='Open RVIZ for Go1 visualization'
+        ),
+
+        DeclareLaunchArgument(
+            name='use_nav2_rviz',
+            default_value='true',
+            choices=['true','false'],
+            description='Open RVIZ for Nav2 visualization'
         ),
 
         Node(
@@ -28,7 +35,7 @@ def generate_launch_description():
                     'nav.rviz'
                 ])
             ],
-            condition=IfCondition(LaunchConfiguration('use_rviz'))
+            condition=IfCondition(LaunchConfiguration('use_rviz')),
         ),
 
         IncludeLaunchDescription(
@@ -44,9 +51,48 @@ def generate_launch_description():
             ],
         ),
 
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('unitree_nav'),
+                    'launch',
+                    'mapping.launch.py'
+                ])
+            ),
+            launch_arguments=[
+                ('use_rviz', 'false'),
+                ('publish_static_tf', 'false'),
+            ],
+        ),
+
         Node(
             package='unitree_nav',
             executable='cmd_processor',
             output='screen'
         ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('nav2_bringup'),
+                    'launch',
+                    'navigation_launch.py'
+                ])
+            ),
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('nav2_bringup'),
+                    'launch',
+                    'rviz_launch.py'
+                ])
+            ),
+            condition=IfCondition(LaunchConfiguration('use_nav2_rviz')),
+        ),
+
+
+
+        # ros2 launch nav2_bringup navigation_launch.py
     ])
