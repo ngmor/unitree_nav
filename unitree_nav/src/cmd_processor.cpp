@@ -88,14 +88,19 @@ public:
       std::bind(&CmdProcessor::stand_up_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
+    srv_recover_stand_ = create_service<std_srvs::srv::Empty>(
+      "recover_stand",
+      std::bind(&CmdProcessor::recover_stand_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
     srv_lay_down_ = create_service<std_srvs::srv::Empty>(
       "lay_down",
       std::bind(&CmdProcessor::lay_down_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
-    srv_recover_stand_ = create_service<std_srvs::srv::Empty>(
-      "recover_stand",
-      std::bind(&CmdProcessor::recover_stand_callback, this,
+    srv_damping_ = create_service<std_srvs::srv::Empty>(
+      "damping",
+      std::bind(&CmdProcessor::damping_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
     srv_set_body_rpy_ = create_service<unitree_nav_interfaces::srv::SetBodyRPY>(
@@ -127,8 +132,9 @@ private:
   rclcpp::Publisher<ros2_unitree_legged_msgs::msg::HighCmd>::SharedPtr pub_high_cmd_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_stand_up_;
-  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_lay_down_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_recover_stand_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_lay_down_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_damping_;
   rclcpp::Service<unitree_nav_interfaces::srv::SetBodyRPY>::SharedPtr srv_set_body_rpy_;
 
   double rate_, interval_;
@@ -190,6 +196,17 @@ private:
     high_cmd_.mode = to_value(Go1Mode::position_stand_up);
   }
 
+  //put the dog in the recover stand state
+  void recover_stand_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::recovery_stand);
+  }
+
+  //To lay down completely, call lay down service and then damping service
+
   //put the dog in the stand down state
   void lay_down_callback(
     const std::shared_ptr<std_srvs::srv::Empty::Request>,
@@ -199,13 +216,14 @@ private:
     high_cmd_.mode = to_value(Go1Mode::position_stand_down);
   }
 
-  //put the dog in the recover stand state
-  void recover_stand_callback(
+  //put the dog in the damping state
+  // DO NOT CALL WHILE DOG IS IN STANDING STATE
+  void damping_callback(
     const std::shared_ptr<std_srvs::srv::Empty::Request>,
     std::shared_ptr<std_srvs::srv::Empty::Response>
   ) {
     reset_cmd_vel();
-    high_cmd_.mode = to_value(Go1Mode::recovery_stand);
+    high_cmd_.mode = to_value(Go1Mode::damping);
   }
 
   void set_body_rpy_callback(

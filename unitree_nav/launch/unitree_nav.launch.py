@@ -41,9 +41,9 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
-                    FindPackageShare('unitree_legged_real'),
+                    FindPackageShare('unitree_nav'),
                     'launch',
-                    'high.launch.py'
+                    'control.launch.py'
                 ])
             ),
             launch_arguments=[
@@ -63,12 +63,6 @@ def generate_launch_description():
                 ('use_rviz', 'false'),
                 ('publish_static_tf', 'false'),
             ],
-        ),
-
-        Node(
-            package='unitree_nav',
-            executable='cmd_processor',
-            output='screen'
         ),
 
         IncludeLaunchDescription(
@@ -91,8 +85,4 @@ def generate_launch_description():
             ),
             condition=IfCondition(LaunchConfiguration('use_nav2_rviz')),
         ),
-
-
-
-        # ros2 launch nav2_bringup navigation_launch.py
     ])
