@@ -12,7 +12,8 @@
 //https://stackoverflow.com/questions/11714325/how-to-get-enum-item-name-from-its-value
 #define STATES \
 X(IDLE, "IDLE") \
-X(SEND_GOAL, "SEND_GOAL")
+X(SEND_GOAL, "SEND_GOAL") \
+X(WAIT_FOR_SERVER_RESPONSE, "WAIT_FOR_SERVER_RESPONSE")
 
 #define X(state, name) state,
 enum class State : size_t {STATES};
@@ -76,6 +77,8 @@ private:
   State state_last_ = state_;
   State state_next_ = state_;
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::Goal goal_msg_ {};
+  bool goal_response_received_ = false;
+  rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle_ {};
 
   void timer_callback()
   {
@@ -97,6 +100,39 @@ private:
       }
       case State::SEND_GOAL:
       {
+        //TODO add wait for action server
+
+        //Reset status flags
+        goal_response_received_ = false;
+        goal_handle_ = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr {};
+
+        //Construct and send goal
+        auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
+        send_goal_options.goal_response_callback = 
+          std::bind(&NavToPose::goal_response_callback, this, std::placeholders::_1);
+        send_goal_options.feedback_callback =
+          std::bind(&NavToPose::feedback_callback, this, std::placeholders::_1, std::placeholders::_2);
+        send_goal_options.result_callback =
+          std::bind(&NavToPose::result_callback, this, std::placeholders::_1);
+        act_nav_to_pose_->async_send_goal(goal_msg_, send_goal_options);
+
+        state_next_ = State::WAIT_FOR_SERVER_RESPONSE;
+
+        break;
+      }
+      case State::WAIT_FOR_SERVER_RESPONSE:
+      {
+        //TODO add timeout
+        if (goal_response_received_) {
+          if (goal_handle_) {
+            RCLCPP_INFO(get_logger(), "Goal accepted by server, waiting for result");
+            //TODO
+          } else {
+            RCLCPP_ERROR_STREAM(get_logger(), "Goal was rejected by server");
+            state_next_ = State::IDLE;
+          }
+        }
+
         break;
       }
       default:
@@ -117,6 +153,26 @@ private:
 
     //Initiate action call
     state_next_ = State::SEND_GOAL;
+  }
+
+  void goal_response_callback(
+    const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr & goal_handle
+  ) {
+    goal_response_received_ = true;
+    goal_handle_ = goal_handle;
+  }
+
+  void feedback_callback(
+    rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle,
+    const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback> feedback
+  ) {
+    //TODO
+  }
+
+  void result_callback(
+    const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult & result
+  ) {
+    //TODO
   }
 };
 
