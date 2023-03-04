@@ -6,6 +6,7 @@
 #include <string>
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "std_srvs/srv/empty.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/LinearMath/Matrix3x3.h"
@@ -71,6 +72,12 @@ public:
                 std::placeholders::_1, std::placeholders::_2)
     );
 
+    srv_cancel_nav_ = create_service<std_srvs::srv::Empty>(
+      "unitree_cancel_nav",
+      std::bind(&NavToPose::cancel_nav_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+
     //Action Clients
     act_nav_to_pose_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(
       this,
@@ -83,6 +90,7 @@ public:
 private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Service<unitree_nav_interfaces::srv::NavToPose>::SharedPtr srv_nav_to_pose_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_cancel_nav_;
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr act_nav_to_pose_;
 
   double rate_ = 100.0; //Hz
@@ -184,6 +192,15 @@ private:
 
     //Initiate action call
     state_next_ = State::SEND_GOAL;
+  }
+
+  void cancel_nav_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    RCLCPP_INFO_STREAM(get_logger(), "Cancelling navigation.");
+    act_nav_to_pose_->async_cancel_all_goals();
+    state_next_ = State::IDLE;
   }
 
   void goal_response_callback(

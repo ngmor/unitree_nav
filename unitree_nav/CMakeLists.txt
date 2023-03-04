@@ -20,12 +20,12 @@ find_package(unitree_nav_interfaces REQUIRED)
 # executables
 add_executable(cmd_processor src/cmd_processor.cpp)
 ament_target_dependencies(cmd_processor
-  rclcpp ros2_unitree_legged_msgs geometry_msgs std_srvs unitree_nav_interfaces
+  rclcpp std_srvs geometry_msgs ros2_unitree_legged_msgs unitree_nav_interfaces
 )
 
 add_executable(nav_to_pose src/nav_to_pose.cpp)
 ament_target_dependencies(nav_to_pose
-  rclcpp rclcpp_action geometry_msgs tf2 tf2_geometry_msgs nav2_msgs unitree_nav_interfaces
+  rclcpp rclcpp_action std_srvs geometry_msgs tf2 tf2_geometry_msgs nav2_msgs unitree_nav_interfaces
 )
 
 install(TARGETS
