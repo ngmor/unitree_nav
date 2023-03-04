@@ -13,7 +13,8 @@
 #define STATES \
 X(IDLE, "IDLE") \
 X(SEND_GOAL, "SEND_GOAL") \
-X(WAIT_FOR_SERVER_RESPONSE, "WAIT_FOR_SERVER_RESPONSE")
+X(WAIT_FOR_GOAL_RESPONSE, "WAIT_FOR_GOAL_RESPONSE") \
+X(WAIT_FOR_MOVEMENT_COMPLETE, "WAIT_FOR_MOVEMENT_COMPLETE")
 
 #define X(state, name) state,
 enum class State : size_t {STATES};
@@ -43,6 +44,12 @@ public:
   NavToPose()
   : Node("nav_to_pose")
   {
+
+    //Parameters
+    auto param = rcl_interfaces::msg::ParameterDescriptor{};
+    param.description = "The frame in which poses are sent.";
+    declare_parameter("pose_frame", "map", param);
+    goal_msg_.pose.header.frame_id = get_parameter("pose_frame").get_parameter_value().get<std::string>();
 
     //Timers
     timer_ = create_wall_timer(
@@ -116,23 +123,27 @@ private:
           std::bind(&NavToPose::result_callback, this, std::placeholders::_1);
         act_nav_to_pose_->async_send_goal(goal_msg_, send_goal_options);
 
-        state_next_ = State::WAIT_FOR_SERVER_RESPONSE;
+        state_next_ = State::WAIT_FOR_GOAL_RESPONSE;
 
         break;
       }
-      case State::WAIT_FOR_SERVER_RESPONSE:
+      case State::WAIT_FOR_GOAL_RESPONSE:
       {
         //TODO add timeout
         if (goal_response_received_) {
           if (goal_handle_) {
             RCLCPP_INFO(get_logger(), "Goal accepted by server, waiting for result");
-            //TODO
+            state_next_ = State::WAIT_FOR_MOVEMENT_COMPLETE;
           } else {
             RCLCPP_ERROR_STREAM(get_logger(), "Goal was rejected by server");
             state_next_ = State::IDLE;
           }
         }
 
+        break;
+      }
+      case State::WAIT_FOR_MOVEMENT_COMPLETE:
+      {
         break;
       }
       default:
@@ -160,6 +171,7 @@ private:
   ) {
     goal_response_received_ = true;
     goal_handle_ = goal_handle;
+    RCLCPP_INFO_STREAM(get_logger(), "Goal response");
   }
 
   void feedback_callback(
@@ -167,12 +179,28 @@ private:
     const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback> feedback
   ) {
     //TODO
+    RCLCPP_INFO_STREAM(get_logger(), "Feedback");
   }
 
   void result_callback(
     const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult & result
   ) {
     //TODO
+    RCLCPP_INFO_STREAM(get_logger(), "Result");
+
+    switch (result.code) {
+      case rclcpp_action::ResultCode::SUCCEEDED:
+        break;
+      case rclcpp_action::ResultCode::ABORTED:
+        RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+        return;
+      case rclcpp_action::ResultCode::CANCELED:
+        RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+        return;
+      default:
+        RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+        return;
+    }
   }
 };
 
