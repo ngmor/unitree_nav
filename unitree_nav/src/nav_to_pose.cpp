@@ -6,6 +6,10 @@
 #include <string>
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "geometry_msgs/msg/quaternion.hpp"
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2/LinearMath/Matrix3x3.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
 #include "unitree_nav_interfaces/srv/nav_to_pose.hpp"
 
@@ -35,6 +39,9 @@ auto to_value(Enumeration const value)
 auto get_state_name(State state) {
   return STATE_NAMES[to_value(state)];
 }
+
+std::tuple<double, double, double> quaternion_to_rpy(const geometry_msgs::msg::Quaternion & q);
+geometry_msgs::msg::Quaternion rpy_to_quaternion(double roll, double pitch, double yaw);
 
 using namespace std::chrono_literals;
 
@@ -190,8 +197,11 @@ private:
     feedback_ = feedback;
 
     if (feedback_) {
+      auto [roll, pitch, yaw] = quaternion_to_rpy(feedback_->current_pose.pose.orientation);
+
       RCLCPP_INFO_STREAM(get_logger(), "x = " << feedback_->current_pose.pose.position.x
                                   << ", y = " << feedback_->current_pose.pose.position.y
+                                  << ", theta = " << yaw
       );
     }
   }
@@ -219,6 +229,21 @@ private:
     *result_ = result;
   }
 };
+
+std::tuple<double, double, double> quaternion_to_rpy(const geometry_msgs::msg::Quaternion & q) {
+  //https://answers.ros.org/question/339528/quaternion-to-rpy-ros2/
+  tf2::Quaternion q_temp;
+  tf2::fromMsg(q, q_temp);
+  tf2::Matrix3x3 m(q_temp);
+  double roll, pitch, yaw;
+  m.getRPY(roll, pitch, yaw);
+  return {roll, pitch, yaw};
+}
+geometry_msgs::msg::Quaternion rpy_to_quaternion(double roll, double pitch, double yaw) {
+  tf2::Quaternion q;
+  q.setRPY(roll, pitch, yaw);
+  return tf2::toMsg(q);
+}
 
 int main(int argc, char ** argv)
 {

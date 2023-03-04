@@ -11,6 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(ros2_unitree_legged_msgs REQUIRED)
 find_package(unitree_nav_interfaces REQUIRED)
@@ -23,7 +25,7 @@ ament_target_dependencies(cmd_processor
 
 add_executable(nav_to_pose src/nav_to_pose.cpp)
 ament_target_dependencies(nav_to_pose
-  rclcpp rclcpp_action geometry_msgs nav2_msgs unitree_nav_interfaces
+  rclcpp rclcpp_action geometry_msgs tf2 tf2_geometry_msgs nav2_msgs unitree_nav_interfaces
 )
 
 install(TARGETS
