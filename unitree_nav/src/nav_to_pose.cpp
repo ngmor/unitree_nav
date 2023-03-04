@@ -118,24 +118,27 @@ private:
       }
       case State::SEND_GOAL:
       {
-        //TODO add wait for action server
+        if(act_nav_to_pose_->wait_for_action_server(0s)) {
+          //Reset status flags and pointers
+          goal_response_received_ = false;
+          goal_handle_ = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr {};
+          result_ = nullptr;
 
-        //Reset status flags and pointers
-        goal_response_received_ = false;
-        goal_handle_ = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr {};
-        result_ = nullptr;
+          //Construct and send goal
+          auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
+          send_goal_options.goal_response_callback = 
+            std::bind(&NavToPose::goal_response_callback, this, std::placeholders::_1);
+          send_goal_options.feedback_callback =
+            std::bind(&NavToPose::feedback_callback, this, std::placeholders::_1, std::placeholders::_2);
+          send_goal_options.result_callback =
+            std::bind(&NavToPose::result_callback, this, std::placeholders::_1);
+          act_nav_to_pose_->async_send_goal(goal_msg_, send_goal_options);
 
-        //Construct and send goal
-        auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
-        send_goal_options.goal_response_callback = 
-          std::bind(&NavToPose::goal_response_callback, this, std::placeholders::_1);
-        send_goal_options.feedback_callback =
-          std::bind(&NavToPose::feedback_callback, this, std::placeholders::_1, std::placeholders::_2);
-        send_goal_options.result_callback =
-          std::bind(&NavToPose::result_callback, this, std::placeholders::_1);
-        act_nav_to_pose_->async_send_goal(goal_msg_, send_goal_options);
-
-        state_next_ = State::WAIT_FOR_GOAL_RESPONSE;
+          state_next_ = State::WAIT_FOR_GOAL_RESPONSE;
+        } else {
+          RCLCPP_ERROR_STREAM(get_logger(), "Action server not available, aborting.");
+          state_next_ = State::IDLE;
+        }
 
         break;
       }
