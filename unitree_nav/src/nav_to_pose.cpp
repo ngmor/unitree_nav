@@ -175,7 +175,9 @@ private:
     std::shared_ptr<unitree_nav_interfaces::srv::NavToPose::Response>
   ) {
     //Store requested pose
-    goal_msg_.pose.pose = request->pose;
+    goal_msg_.pose.pose.position.x = request->x;
+    goal_msg_.pose.pose.position.y = request->y;
+    goal_msg_.pose.pose.orientation = rpy_to_quaternion(0.0, 0.0, request->theta);
 
     //Initiate action call
     state_next_ = State::SEND_GOAL;
