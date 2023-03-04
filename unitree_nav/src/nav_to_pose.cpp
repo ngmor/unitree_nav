@@ -2,6 +2,8 @@
 //the Unitree Go1 to a certain pose in the map.
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "nav2_msgs/action/navigate_to_pose.hpp"
 
 
 using namespace std::chrono_literals;
@@ -19,11 +21,18 @@ public:
       std::bind(&NavToPose::timer_callback, this)
     );
 
+    //Action Clients
+    act_nav_to_pose_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(
+      this,
+      "navigate_to_pose"
+    );
+
     RCLCPP_INFO_STREAM(get_logger(), "nav_to_pose node started");
   }
 
 private:
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr act_nav_to_pose_;
 
   double rate_ = 100.0; //Hz
   double interval_ = 1.0 / rate_; //seconds
