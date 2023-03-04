@@ -7,11 +7,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "unitree_nav_interfaces/srv/nav_to_pose.hpp"
 
 //https://stackoverflow.com/questions/11714325/how-to-get-enum-item-name-from-its-value
 #define STATES \
 X(IDLE, "IDLE") \
-X(RUNNING, "RUNNING")
+X(SEND_GOAL, "SEND_GOAL")
 
 #define X(state, name) state,
 enum class State : size_t {STATES};
@@ -48,6 +49,13 @@ public:
       std::bind(&NavToPose::timer_callback, this)
     );
 
+    //Services
+    srv_nav_to_pose_ = create_service<unitree_nav_interfaces::srv::NavToPose>(
+      "unitree_nav_to_pose",
+      std::bind(&NavToPose::srv_nav_to_pose_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+
     //Action Clients
     act_nav_to_pose_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(
       this,
@@ -59,6 +67,7 @@ public:
 
 private:
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Service<unitree_nav_interfaces::srv::NavToPose>::SharedPtr srv_nav_to_pose_;
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr act_nav_to_pose_;
 
   double rate_ = 100.0; //Hz
@@ -66,6 +75,7 @@ private:
   State state_ = State::IDLE;
   State state_last_ = state_;
   State state_next_ = state_;
+  rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::Goal goal_msg_ {};
 
   void timer_callback()
   {
@@ -83,21 +93,30 @@ private:
     switch(state_) {
       case State::IDLE:
       {
-        state_next_ = State::RUNNING;
         break;
       }
-      case State::RUNNING:
+      case State::SEND_GOAL:
       {
-        state_next_ = State::IDLE;
         break;
       }
       default:
         auto msg = "Unhandled state: " + get_state_name(state_);
-        // RCLCPP_ERROR_STREAM(get_logger(), "Unhandled state: " << STATE_NAMES[state_]);
-        // throw std::logic_error("Unhandle")
+        RCLCPP_ERROR_STREAM(get_logger(), msg);
+        throw std::logic_error(msg);
         break;
     }
 
+  }
+
+  void srv_nav_to_pose_callback(
+    const std::shared_ptr<unitree_nav_interfaces::srv::NavToPose::Request> request,
+    std::shared_ptr<unitree_nav_interfaces::srv::NavToPose::Response>
+  ) {
+    //Store requested pose
+    goal_msg_.pose.pose = request->pose;
+
+    //Initiate action call
+    state_next_ = State::SEND_GOAL;
   }
 };
 
