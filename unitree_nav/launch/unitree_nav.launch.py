@@ -73,6 +73,15 @@ def generate_launch_description():
                     'navigation_launch.py'
                 ])
             ),
+            launch_arguments=[
+                ('params_file',
+                    PathJoinSubstitution([
+                        FindPackageShare('unitree_nav'),
+                        'config',
+                        'nav2_params.yaml'
+                    ])
+                ),
+            ],
         ),
 
         IncludeLaunchDescription(
