@@ -19,8 +19,13 @@ ament_target_dependencies(cmd_processor
   rclcpp ros2_unitree_legged_msgs geometry_msgs std_srvs unitree_nav_interfaces
 )
 
+add_executable(nav_to_pose src/nav_to_pose.cpp)
+ament_target_dependencies(nav_to_pose
+  rclcpp geometry_msgs unitree_nav_interfaces
+)
+
 install(TARGETS
-  cmd_processor
+  cmd_processor nav_to_pose
   DESTINATION lib/${PROJECT_NAME}
 )
 
