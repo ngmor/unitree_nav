@@ -86,6 +86,10 @@ private:
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::Goal goal_msg_ {};
   bool goal_response_received_ = false;
   rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle_ {};
+  std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback> feedback_ = nullptr;
+  std::shared_ptr<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult>
+    result_ = nullptr;
+  
 
   void timer_callback()
   {
@@ -109,9 +113,10 @@ private:
       {
         //TODO add wait for action server
 
-        //Reset status flags
+        //Reset status flags and pointers
         goal_response_received_ = false;
         goal_handle_ = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr {};
+        result_ = nullptr;
 
         //Construct and send goal
         auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
@@ -144,6 +149,9 @@ private:
       }
       case State::WAIT_FOR_MOVEMENT_COMPLETE:
       {
+        if (result_) {
+          state_next_ = State::IDLE;
+        }
         break;
       }
       default:
@@ -175,21 +183,25 @@ private:
   }
 
   void feedback_callback(
-    rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle,
+    rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr,
     const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback> feedback
   ) {
-    //TODO
-    RCLCPP_INFO_STREAM(get_logger(), "Feedback");
+    //Store result for later use
+    feedback_ = feedback;
+
+    if (feedback_) {
+      RCLCPP_INFO_STREAM(get_logger(), "x = " << feedback_->current_pose.pose.position.x
+                                  << ", y = " << feedback_->current_pose.pose.position.y
+      );
+    }
   }
 
   void result_callback(
     const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult & result
   ) {
-    //TODO
-    RCLCPP_INFO_STREAM(get_logger(), "Result");
-
     switch (result.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
+        RCLCPP_INFO(this->get_logger(), "Goal succeeded");
         break;
       case rclcpp_action::ResultCode::ABORTED:
         RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
@@ -201,6 +213,10 @@ private:
         RCLCPP_ERROR(this->get_logger(), "Unknown result code");
         return;
     }
+
+    //Store result for later use
+    result_ = std::make_shared<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult>();
+    *result_ = result;
   }
 };
 
