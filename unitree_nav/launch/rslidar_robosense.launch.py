@@ -115,7 +115,9 @@ def generate_launch_description():
                 ('scan_cloud', 'assembled_cloud')
             ],
             arguments=[
-                '-d', # This will delete the previous database (~/.ros/rtabmap.db)
+                # '-d', # This will delete the previous database (~/.ros/rtabmap.db)
+                'Mem/IncrementalMemory', 'false',
+                'Mem/InitWMWithAllNodes', 'true',
                 'RGBD/ProximityMaxGraphDepth', '0',
                 'RGBD/ProximityPathMaxNeighbors', '1',
                 'RGBD/AngularUpdate', '0.05',
