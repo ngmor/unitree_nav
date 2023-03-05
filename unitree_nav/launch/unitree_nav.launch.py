@@ -24,6 +24,20 @@ def generate_launch_description():
             description='Open RVIZ for Nav2 visualization'
         ),
 
+        DeclareLaunchArgument(
+            name='localize_only',
+            default_value='true',
+            choices=['true','false'],
+            description='Localize only, do not change loaded map'
+        ),
+
+        DeclareLaunchArgument(
+            name='restart_map',
+            default_value='false',
+            choices=['true','false'],
+            description='Delete previous map and restart'
+        ),
+
         Node(
             package='rviz2',
             executable='rviz2',
@@ -62,6 +76,8 @@ def generate_launch_description():
             launch_arguments=[
                 ('use_rviz', 'false'),
                 ('publish_static_tf', 'false'),
+                ('localize_only', LaunchConfiguration('localize_only')),
+                ('restart_map', LaunchConfiguration('restart_map')),
             ],
         ),
 

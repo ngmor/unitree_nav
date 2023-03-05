@@ -26,6 +26,20 @@ def generate_launch_description():
         ),
 
         DeclareLaunchArgument(
+            name='localize_only',
+            default_value='true',
+            choices=['true','false'],
+            description='Localize only, do not change loaded map'
+        ),
+
+        DeclareLaunchArgument(
+            name='restart_map',
+            default_value='false',
+            choices=['true','false'],
+            description='Delete previous map and restart'
+        ),
+
+        DeclareLaunchArgument(
             name='icp_odometry_log_level',
             default_value='WARN', # reduce output from this node
             choices=['ERROR', 'WARN', 'INFO', 'DEBUG'],
@@ -71,6 +85,8 @@ def generate_launch_description():
             launch_arguments=[
                 ('use_rtabmapviz', LaunchConfiguration('use_rtabmapviz')),
                 ('icp_odometry_log_level', LaunchConfiguration('icp_odometry_log_level')),
+                ('localize_only', LaunchConfiguration('localize_only')),
+                ('restart_map', LaunchConfiguration('restart_map')),
             ],
         ),
     ])

@@ -8,8 +8,10 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration, TextSubstitution
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration, TextSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+from unitree_nav_launch_module import TernaryTextSubstitution
 
 def generate_launch_description():
     return LaunchDescription([
@@ -27,6 +29,20 @@ def generate_launch_description():
             default_value='false',
             choices=['true','false'],
             description='Enable lidar deskewing'
+        ),
+
+        DeclareLaunchArgument(
+            name='localize_only',
+            default_value='true',
+            choices=['true','false'],
+            description='Localize only, do not change loaded map'
+        ),
+
+        DeclareLaunchArgument(
+            name='restart_map',
+            default_value='false',
+            choices=['true','false'],
+            description='Delete previous map and restart'
         ),
 
         DeclareLaunchArgument(
@@ -115,9 +131,9 @@ def generate_launch_description():
                 ('scan_cloud', 'assembled_cloud')
             ],
             arguments=[
-                # '-d', # This will delete the previous database (~/.ros/rtabmap.db)
-                'Mem/IncrementalMemory', 'false',
-                'Mem/InitWMWithAllNodes', 'true',
+                TernaryTextSubstitution(IfCondition(LaunchConfiguration('restart_map')), '-d', ''),
+                'Mem/IncrementalMemory', TernaryTextSubstitution(IfCondition(LaunchConfiguration('localize_only')), 'false', 'true'),
+                'Mem/InitWMWithAllNodes', LaunchConfiguration('localize_only'),
                 'RGBD/ProximityMaxGraphDepth', '0',
                 'RGBD/ProximityPathMaxNeighbors', '1',
                 'RGBD/AngularUpdate', '0.05',
