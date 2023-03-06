@@ -5,6 +5,7 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from unitree_nav_launch_module import TernaryTextSubstitution
 
 
 def generate_launch_description():
@@ -38,6 +39,13 @@ def generate_launch_description():
             description='Delete previous map and restart'
         ),
 
+        DeclareLaunchArgument(
+            name='use_onboard_odometry',
+            default_value='true',
+            choices=['true','false'],
+            description='Publish odometry from received high state messages'
+        ),
+
         Node(
             package='rviz2',
             executable='rviz2',
@@ -62,6 +70,7 @@ def generate_launch_description():
             ),
             launch_arguments=[
                 ('use_rviz', 'false'),
+                ('use_onboard_odometry', LaunchConfiguration('use_onboard_odometry')),
             ],
         ),
 
@@ -78,6 +87,13 @@ def generate_launch_description():
                 ('publish_static_tf', 'false'),
                 ('localize_only', LaunchConfiguration('localize_only')),
                 ('restart_map', LaunchConfiguration('restart_map')),
+                ('use_icp_odometry',
+                    TernaryTextSubstitution(
+                        IfCondition(LaunchConfiguration('use_onboard_odometry')),
+                        'false',
+                        'true'
+                    )
+                ),
             ],
         ),
 

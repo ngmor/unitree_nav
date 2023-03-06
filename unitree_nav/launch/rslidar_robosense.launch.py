@@ -66,6 +66,13 @@ def generate_launch_description():
             description='Set logger level for icp_odometry. Can set to WARN to reduce message output from this node.'
         ),
 
+        DeclareLaunchArgument(
+            name='use_icp_odometry',
+            default_value='true',
+            choices=['true','false'],
+            description='Publish ICP odometry'
+        ),
+
         # Nodes to launch
         Node(
             package='rtabmap_ros', executable='icp_odometry', output='screen',
@@ -102,8 +109,9 @@ def generate_launch_description():
                     TextSubstitution(text='icp_odometry:='),
                     LaunchConfiguration('icp_odometry_log_level'),
                 ],
-            ]
-            ),
+            ],
+            condition=IfCondition(LaunchConfiguration('use_icp_odometry'))
+        ),
             
         Node(
             package='rtabmap_ros', executable='point_cloud_assembler', output='screen',

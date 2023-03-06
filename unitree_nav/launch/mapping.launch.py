@@ -53,6 +53,13 @@ def generate_launch_description():
             description='Open RVIZ for visualization'
         ),
 
+        DeclareLaunchArgument(
+            name='use_icp_odometry',
+            default_value='true',
+            choices=['true','false'],
+            description='Publish ICP odometry'
+        ),
+
         # Publish a static transform between base_link and base_laser for standalone use
         # of this launch file
         Node(
@@ -87,6 +94,7 @@ def generate_launch_description():
                 ('icp_odometry_log_level', LaunchConfiguration('icp_odometry_log_level')),
                 ('localize_only', LaunchConfiguration('localize_only')),
                 ('restart_map', LaunchConfiguration('restart_map')),
+                ('use_icp_odometry', LaunchConfiguration('use_icp_odometry')),
             ],
         ),
     ])

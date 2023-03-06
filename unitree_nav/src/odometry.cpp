@@ -29,7 +29,7 @@ public:
     auto odom_id = get_parameter("odom_id").get_parameter_value().get<std::string>();
 
      //Publishers
-    pub_odom_ = create_publisher<nav_msgs::msg::Odometry>("odom", 10);
+    pub_odom_ = create_publisher<nav_msgs::msg::Odometry>("odom", 0);
 
     //Subscribers
     sub_state_ = this->create_subscription<ros2_unitree_legged_msgs::msg::HighState>(
@@ -48,6 +48,11 @@ public:
     odom_msg_.twist.twist.angular.x = 0.0;
     odom_msg_.twist.twist.angular.y = 0.0;
     odom_msg_.twist.covariance = std::array<double, 36> {};
+
+    for (int i = 0; i < 36; i += 6) {
+      odom_msg_.pose.covariance[i] = 1.0e-6;
+      odom_msg_.twist.covariance[i] = 1.0e-6;
+    }
 
     //Init odom transform
     odom_tf_.header.frame_id = odom_id;
