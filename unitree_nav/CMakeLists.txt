@@ -23,13 +23,18 @@ ament_target_dependencies(cmd_processor
   rclcpp std_srvs geometry_msgs ros2_unitree_legged_msgs unitree_nav_interfaces
 )
 
+add_executable(odometry src/odometry.cpp)
+ament_target_dependencies(odometry
+  rclcpp
+)
+
 add_executable(nav_to_pose src/nav_to_pose.cpp)
 ament_target_dependencies(nav_to_pose
   rclcpp rclcpp_action std_srvs geometry_msgs tf2 tf2_geometry_msgs nav2_msgs unitree_nav_interfaces
 )
 
 install(TARGETS
-  cmd_processor nav_to_pose
+  cmd_processor nav_to_pose odometry
   DESTINATION lib/${PROJECT_NAME}
 )
 
