@@ -15,12 +15,13 @@
   <depend>std_srvs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2</depend>
+  <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>nav2_msgs</depend>
   <depend>ros2_unitree_legged_msgs</depend>
   <depend>unitree_nav_interfaces</depend>
 
-  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>rtabmap</exec_depend>
   <exec_depend>rtabmap_ros</exec_depend>
   <exec_depend>rslidar_sdk</exec_depend>

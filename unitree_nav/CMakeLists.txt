@@ -12,7 +12,9 @@ find_package(rclcpp_action REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(ros2_unitree_legged_msgs REQUIRED)
 find_package(unitree_nav_interfaces REQUIRED)
@@ -25,7 +27,7 @@ ament_target_dependencies(cmd_processor
 
 add_executable(odometry src/odometry.cpp)
 ament_target_dependencies(odometry
-  rclcpp
+  rclcpp geometry_msgs tf2_ros nav_msgs ros2_unitree_legged_msgs
 )
 
 add_executable(nav_to_pose src/nav_to_pose.cpp)
