@@ -83,6 +83,11 @@ public:
     );
 
     //Services
+    srv_reset_state_ = create_service<std_srvs::srv::Empty>(
+      "reset_state",
+      std::bind(&CmdProcessor::reset_state_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
     srv_stand_up_ = create_service<std_srvs::srv::Empty>(
       "stand_up",
       std::bind(&CmdProcessor::stand_up_callback, this,
@@ -101,6 +106,26 @@ public:
     srv_damping_ = create_service<std_srvs::srv::Empty>(
       "damping",
       std::bind(&CmdProcessor::damping_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+    srv_jump_yaw_ = create_service<std_srvs::srv::Empty>(
+      "jump_yaw",
+      std::bind(&CmdProcessor::jump_yaw_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+    srv_beg_ = create_service<std_srvs::srv::Empty>(
+      "beg",
+      std::bind(&CmdProcessor::beg_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+    srv_dance1_ = create_service<std_srvs::srv::Empty>(
+      "dance1",
+      std::bind(&CmdProcessor::dance1_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
+    srv_dance2_ = create_service<std_srvs::srv::Empty>(
+      "dance2",
+      std::bind(&CmdProcessor::dance2_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
     srv_set_body_rpy_ = create_service<unitree_nav_interfaces::srv::SetBodyRPY>(
@@ -131,16 +156,23 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<ros2_unitree_legged_msgs::msg::HighCmd>::SharedPtr pub_high_cmd_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_reset_state_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_stand_up_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_recover_stand_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_lay_down_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_damping_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_jump_yaw_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_beg_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_dance1_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_dance2_;
   rclcpp::Service<unitree_nav_interfaces::srv::SetBodyRPY>::SharedPtr srv_set_body_rpy_;
 
   double rate_, interval_;
   std::chrono::milliseconds interval_ms_, cmd_vel_timeout_, cmd_vel_counter_;
   geometry_msgs::msg::Twist cmd_vel_ {};
   ros2_unitree_legged_msgs::msg::HighCmd high_cmd_ {};
+  bool reset_state_ = false;
+  uint8_t reset_counter_ = 0;
   
 
   void timer_callback()
@@ -163,6 +195,20 @@ private:
 
     //publish high command
     pub_high_cmd_->publish(high_cmd_);
+
+    //Reset state to idle after one message is sent for anything but walking
+    if (reset_state_) {
+      if (reset_counter_ >= 10) {
+        high_cmd_.mode = to_value(Go1Mode::idle);
+        reset_state_ = false;
+      }
+      reset_counter_++;
+    }
+  }
+
+  void reset_state() {
+    reset_state_ = true;
+    reset_counter_ = 0;
   }
 
   void cmd_vel_callback(const geometry_msgs::msg::Twist & msg)
@@ -187,6 +233,15 @@ private:
     cmd_vel_.angular.z = 0.0;
   }
 
+  //put the dog back into idle state
+  void reset_state_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    reset_state(); //Reset state after command is sent
+  }
+
   //put the dog in the stand up state
   void stand_up_callback(
     const std::shared_ptr<std_srvs::srv::Empty::Request>,
@@ -194,6 +249,7 @@ private:
   ) {
     reset_cmd_vel();
     high_cmd_.mode = to_value(Go1Mode::position_stand_up);
+    reset_state(); //Reset state after command is sent
   }
 
   //put the dog in the recover stand state
@@ -203,6 +259,7 @@ private:
   ) {
     reset_cmd_vel();
     high_cmd_.mode = to_value(Go1Mode::recovery_stand);
+    reset_state(); //Reset state after command is sent
   }
 
   //To lay down completely, call lay down service and then damping service
@@ -214,6 +271,7 @@ private:
   ) {
     reset_cmd_vel();
     high_cmd_.mode = to_value(Go1Mode::position_stand_down);
+    reset_state(); //Reset state after command is sent
   }
 
   //put the dog in the damping state
@@ -224,6 +282,47 @@ private:
   ) {
     reset_cmd_vel();
     high_cmd_.mode = to_value(Go1Mode::damping);
+    reset_state(); //Reset state after command is sent
+  }
+
+  //put the dog into jump_yaw state
+  void jump_yaw_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::jump_yaw);
+    reset_state(); //Reset state after command is sent
+  }
+
+  //put the dog into straight_hand state
+  void beg_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::straight_hand);
+    reset_state(); //Reset state after command is sent
+  }
+
+  //put the dog into dance1 state
+  void dance1_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::dance1);
+    reset_state(); //Reset state after command is sent
+  }
+
+  //put the dog into dance2 state
+  void dance2_callback(
+    const std::shared_ptr<std_srvs::srv::Empty::Request>,
+    std::shared_ptr<std_srvs::srv::Empty::Response>
+  ) {
+    reset_cmd_vel();
+    high_cmd_.mode = to_value(Go1Mode::dance2);
+    reset_state(); //Reset state after command is sent
   }
 
   void set_body_rpy_callback(
