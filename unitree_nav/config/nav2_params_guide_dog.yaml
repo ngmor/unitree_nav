@@ -139,11 +139,11 @@ controller_server:
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
-      min_vel_x: -0.26
-      min_vel_y: -0.26
-      max_vel_x: 0.26
-      max_vel_y: 0.26
-      max_vel_theta: 1.0
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 0.15
+      max_vel_y: 0.0
+      max_vel_theta: 0.5
       min_speed_xy: 0.0
       max_speed_xy: 0.26
       min_speed_theta: 0.0
@@ -190,7 +190,7 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      footprint: "[ [0.360, 0.200], [0.360, -0.700], [-0.360, -0.700], [-0.360, 0.200] ]"
+      footprint: "[ [0.360, 0.500], [0.360, -0.200], [-0.800, -0.200], [-0.800, 0.500] ]"
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -358,8 +358,8 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.26, 0.26, 1.0]
-    min_velocity: [-0.26, -0.26, -1.0]
+    max_velocity: [0.15, 0.0, 0.5]
+    min_velocity: [0.0, 0.0, -0.5]
     max_accel: [2.5, 2.5, 3.2]
     max_decel: [-2.5, -2.5, -3.2]
     odom_topic: "odom"
