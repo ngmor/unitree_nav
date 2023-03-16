@@ -141,7 +141,7 @@ controller_server:
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
-      max_vel_x: 0.15
+      max_vel_x: 0.25 #0.15
       max_vel_y: 0.0
       max_vel_theta: 0.5
       min_speed_xy: 0.0
@@ -358,7 +358,7 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.15, 0.0, 0.5]
+    max_velocity: [0.25, 0.0, 0.5]
     min_velocity: [0.0, 0.0, -0.5]
     max_accel: [2.5, 2.5, 3.2]
     max_decel: [-2.5, -2.5, -3.2]

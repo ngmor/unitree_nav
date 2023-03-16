@@ -9,3 +9,6 @@ It is a work in progress and further developments and documentation will be comi
 * cd src/rslidar_sdk_ros
 * git submodule init
 * git submodule update
+
+# To send a goal:
+`ros2 service call /unitree_nav_to_pose unitree_nav_interfaces/srv/NavToPose "x: 0.0 y: 0.0 theta: 0.0"`
