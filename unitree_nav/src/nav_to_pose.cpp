@@ -1,4 +1,4 @@
-//This node is an example for working with the Nav2 to stack to command
+//This node is an example for working with the Nav2 stack to command
 //the Unitree Go1 to a certain pose in the map.
 
 #include <exception>
