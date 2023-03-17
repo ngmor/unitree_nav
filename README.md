@@ -5,7 +5,7 @@ This repository has code and launch files for running the Unitree Go1 in high le
 Dependencies for this repository are listed in the `nav.repos` file. To import all dependencies, clone this repository into the `src` directory in your workspace root. Then from the workspace root directory, run the following commands:
 
 ```
-vcs import src < src/unitree_nav/nav.repos 
+vcs import < src/unitree_nav/nav.repos 
 cd src/rslidar_sdk_ros2
 git submodule init
 git submodule update
