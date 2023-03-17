@@ -6,7 +6,7 @@ Dependencies for this repository are listed in the `nav.repos` file. To import a
 
 ```
 vcs import src < src/unitree_nav/nav.repos 
-cd src/rslidar_sdk_ros
+cd src/rslidar_sdk_ros2
 git submodule init
 git submodule update
 ```
