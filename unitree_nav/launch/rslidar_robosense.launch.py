@@ -1,10 +1,3 @@
-# Example:
-#   $ ros2 launch rslidar_sdk start.py
-#
-#   SLAM:
-#   $ ros2 launch rtabmap_ros rslidar_robosense.launch.py
-
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
@@ -68,7 +61,7 @@ def generate_launch_description():
 
         # Nodes to launch
         Node(
-            package='rtabmap_ros', executable='icp_odometry', output='screen',
+            package='rtabmap_odom', executable='icp_odometry', output='screen',
             parameters=[{
                 'frame_id':'base_link',
                 'odom_frame_id':'odom',
@@ -106,7 +99,7 @@ def generate_launch_description():
             ),
             
         Node(
-            package='rtabmap_ros', executable='point_cloud_assembler', output='screen',
+            package='rtabmap_util', executable='point_cloud_assembler', output='screen',
             parameters=[{
                 'max_clouds':10,
                 'fixed_frame_id':'',
@@ -117,7 +110,7 @@ def generate_launch_description():
             ]),
             
         Node(
-            package='rtabmap_ros', executable='rtabmap', output='screen',
+            package='rtabmap_slam', executable='rtabmap', output='screen',
             parameters=[{
                 'frame_id':'base_laser',
                 'subscribe_depth':False,
@@ -162,7 +155,7 @@ def generate_launch_description():
                 ],
             ]), 
         Node(
-            package='rtabmap_ros', executable='rtabmapviz', output='screen',
+            package='rtabmap_viz', executable='rtabmap_viz', output='screen',
             parameters=[{
                 'frame_id':'base_laser',
                 'odom_frame_id':'odom',
