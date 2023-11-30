@@ -15,6 +15,7 @@ rosidl_generate_interfaces(
   ${PROJECT_NAME}_srv
   "srv/SetBodyRPY.srv"
   "srv/NavToPose.srv"
+  "srv/SetGait.srv"
   LIBRARY_NAME ${PROJECT_NAME}
   DEPENDENCIES
   geometry_msgs

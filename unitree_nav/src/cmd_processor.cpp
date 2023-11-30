@@ -3,6 +3,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "ros2_unitree_legged_msgs/msg/high_cmd.hpp"
 #include "unitree_nav_interfaces/srv/set_body_rpy.hpp"
+#include "unitree_nav_interfaces/srv/set_gait.hpp"
 
 using namespace std::chrono_literals;
 
@@ -133,6 +134,11 @@ public:
       std::bind(&CmdProcessor::set_body_rpy_callback, this,
                 std::placeholders::_1, std::placeholders::_2)
     );
+    srv_set_gait_ = create_service<unitree_nav_interfaces::srv::SetGait>(
+      "set_gait",
+      std::bind(&CmdProcessor::set_gait_callback, this,
+                std::placeholders::_1, std::placeholders::_2)
+    );
 
 
     //Misc variables
@@ -148,6 +154,9 @@ public:
     high_cmd_.velocity[0] = 0.0;
     high_cmd_.velocity[1] = 0.0;
     high_cmd_.yaw_speed = 0.0;
+
+    // default walking gait is trotting
+    walking_gait = Go1Gait::trot;
 
     RCLCPP_INFO_STREAM(get_logger(), "cmd_processor node started");
   }
@@ -166,6 +175,7 @@ private:
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_dance1_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr srv_dance2_;
   rclcpp::Service<unitree_nav_interfaces::srv::SetBodyRPY>::SharedPtr srv_set_body_rpy_;
+  rclcpp::Service<unitree_nav_interfaces::srv::SetGait>::SharedPtr srv_set_gait_;
 
   double rate_, interval_;
   std::chrono::milliseconds interval_ms_, cmd_vel_timeout_, cmd_vel_counter_;
@@ -173,7 +183,7 @@ private:
   ros2_unitree_legged_msgs::msg::HighCmd high_cmd_ {};
   bool reset_state_ = false;
   uint8_t reset_counter_ = 0;
-  
+  Go1Gait walking_gait;
 
   void timer_callback()
   {
@@ -221,7 +231,7 @@ private:
 
     //set mode and gait type
     high_cmd_.mode = to_value(Go1Mode::target_velocity_walking);
-    high_cmd_.gait_type = to_value(Go1Gait::trot);
+    high_cmd_.gait_type = to_value(walking_gait);
   }
 
   void reset_cmd_vel() {
@@ -337,6 +347,14 @@ private:
 
     high_cmd_.mode = to_value(Go1Mode::force_stand);
   }
+
+  void set_gait_callback(
+    const std::shared_ptr<unitree_nav_interfaces::srv::SetGait::Request> request,
+    std::shared_ptr<unitree_nav_interfaces::srv::SetGait::Response>
+  ) {
+    walking_gait = static_cast<Go1Gait>(request->gait);
+  }
+
 };
 
 int main(int argc, char ** argv)
