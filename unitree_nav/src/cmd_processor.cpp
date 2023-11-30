@@ -352,7 +352,10 @@ private:
     const std::shared_ptr<unitree_nav_interfaces::srv::SetGait::Request> request,
     std::shared_ptr<unitree_nav_interfaces::srv::SetGait::Response>
   ) {
-    walking_gait = static_cast<Go1Gait>(request->gait);
+    // check that we are not setting an invalid gait type
+    if (request->gait <= 4){
+      walking_gait = static_cast<Go1Gait>(request->gait);
+    }
   }
 
 };

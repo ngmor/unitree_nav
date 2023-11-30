@@ -1,2 +1,2 @@
-int64 gait    # idle = 0, trot = 1, trot_running = 2, climb_stairs = 3, trot_obstacle = 4
+uint8 gait    # idle = 0, trot = 1, trot_running = 2, climb_stairs = 3, trot_obstacle = 4
 ---
