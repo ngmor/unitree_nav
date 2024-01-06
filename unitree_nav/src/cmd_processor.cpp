@@ -156,7 +156,7 @@ public:
     high_cmd_.yaw_speed = 0.0;
 
     // default walking gait is trotting
-    walking_gait = Go1Gait::trot;
+    walking_gait_ = Go1Gait::trot;
 
     RCLCPP_INFO_STREAM(get_logger(), "cmd_processor node started");
   }
@@ -183,7 +183,7 @@ private:
   ros2_unitree_legged_msgs::msg::HighCmd high_cmd_ {};
   bool reset_state_ = false;
   uint8_t reset_counter_ = 0;
-  Go1Gait walking_gait;
+  Go1Gait walking_gait_;
 
   void timer_callback()
   {
@@ -231,7 +231,7 @@ private:
 
     //set mode and gait type
     high_cmd_.mode = to_value(Go1Mode::target_velocity_walking);
-    high_cmd_.gait_type = to_value(walking_gait);
+    high_cmd_.gait_type = to_value(walking_gait_);
   }
 
   void reset_cmd_vel() {
@@ -354,7 +354,7 @@ private:
   ) {
     // check that we are not setting an invalid gait type
     if (request->gait <= 4){
-      walking_gait = static_cast<Go1Gait>(request->gait);
+      walking_gait_ = static_cast<Go1Gait>(request->gait);
     }
   }
 
